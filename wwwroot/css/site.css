@@ -13,6 +13,7 @@ body {
     background: linear-gradient(135deg, #f8f5fb 0%, #f5f9ff 50%, #fffdf3 100%);
     color: var(--teda-ink);
     min-height: 100vh;
+    overflow-x: hidden;
 }
 
 .page-header {
@@ -482,8 +483,8 @@ body {
     margin-top: .25rem;
     max-height: 280px;
     overflow-y: auto;
-    position: absolute;
-    width: calc(100% - 1.5rem);
+    position: relative;
+    width: 100%;
     z-index: 20;
 }
 
@@ -522,11 +523,97 @@ body {
 }
 
 @media (max-width: 767.98px) {
+    .page-header .container-fluid,
+    main.container-fluid {
+        padding-left: .75rem !important;
+        padding-right: .75rem !important;
+    }
+
+    .page-header h1 {
+        font-size: 1.35rem;
+        line-height: 1.2;
+    }
+
+    .brand-mark {
+        height: 2.6rem;
+        width: 2.6rem;
+    }
+
+    .session-summary {
+        align-items: stretch;
+        width: 100%;
+    }
+
+    .session-summary .btn {
+        flex: 1 1 100%;
+    }
+
+    .admin-toolbar .d-flex.gap-2 {
+        display: grid !important;
+        grid-template-columns: 1fr 1fr;
+        width: 100%;
+    }
+
+    .admin-toolbar .d-flex.gap-2 .btn {
+        min-width: 0;
+        width: 100%;
+    }
+
+    .action-buttons {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .action-buttons .btn {
+        width: 100%;
+    }
+
+    .result-status {
+        min-height: 100px;
+    }
+
+    .modal-dialog {
+        margin: .5rem;
+    }
+
+    .modal-content {
+        max-height: calc(100vh - 1rem);
+    }
+
+    .modal-footer {
+        gap: .5rem;
+    }
+
+    .modal-footer .btn {
+        flex: 1 1 100%;
+        margin: 0;
+    }
+
+    .permissions-scroll {
+        max-height: 48vh;
+    }
+
     .import-stat-grid {
         grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 
     .import-filter {
+        width: 100%;
+    }
+
+    .import-stat span {
+        font-size: 1.45rem;
+    }
+}
+
+@media (min-width: 768px) and (max-width: 1199.98px) {
+    .admin-toolbar .d-flex.gap-2 {
+        display: grid !important;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        width: 100%;
+    }
+
+    .admin-toolbar .d-flex.gap-2 .btn {
         width: 100%;
     }
 }

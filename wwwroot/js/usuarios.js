@@ -46,7 +46,7 @@
                 <td>${user.permissions.length} permisos</td>
                 <td>
                     <div class="d-flex flex-wrap justify-content-center gap-1">
-                        <button class="btn btn-sm btn-outline-primary js-edit-user" data-user-id="${user.id}" type="button">Editar permisos</button>
+                        <button class="btn btn-sm btn-outline-primary js-edit-user" data-user-id="${user.id}" type="button">Editar usuario</button>
                         <button class="btn btn-sm ${user.active ? "btn-outline-warning" : "btn-outline-success"} js-toggle-user"
                                 data-user-id="${user.id}" type="button" ${user.mainAdmin ? "disabled" : ""}>
                             ${user.active ? "Desactivar" : "Activar"}
@@ -76,10 +76,15 @@
         byId("userFormError").classList.add("d-none");
         byId("userId").value = user?.id ?? "";
         byId("userModalTitle").textContent = user ? "Editar usuario" : "Agregar usuario";
-        byId("userSaveButton").textContent = user ? "Guardar permisos" : "Guardar usuario";
+        byId("userSaveButton").textContent = user
+            ? (user.mainAdmin ? "Guardar contraseña" : "Guardar cambios")
+            : "Crear usuario";
         byId("fullName").value = user?.name ?? "";
         byId("username").value = user?.username ?? "";
         byId("userPassword").required = !user;
+        byId("userPasswordHelp").textContent = user
+            ? "Déjala vacía para conservar la contraseña actual. Escribe una nueva para cambiarla."
+            : "Mínimo 6 caracteres.";
         byId("userRole").value = user?.role ?? "Operaria";
         byId("userActive").checked = user?.active ?? true;
 
@@ -150,7 +155,11 @@
         });
         bootstrap.Modal.getInstance(byId("userModal")).hide();
         renderUsers();
-        showToast(existing ? "Permisos actualizados correctamente" : "Usuario creado.");
+        showToast(existing
+            ? (password && existing.mainAdmin
+                ? "Contraseña de la administradora actualizada correctamente."
+                : "Usuario actualizado correctamente.")
+            : "Usuario creado correctamente.");
     }
 
     function toggleUser(id) {

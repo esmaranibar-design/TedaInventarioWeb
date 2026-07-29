@@ -101,10 +101,10 @@
                             <div class="invalid-feedback">Ingresa un nombre de usuario.</div>
                         </div>
                         <div class="col-md-6">
-                            <label for="userPassword" class="form-label">Contraseña</label>
+                            <label id="userPasswordLabel" for="userPassword" class="form-label">Contraseña</label>
                             <input id="userPassword" class="form-control" type="password" minlength="6"
                                    autocomplete="new-password" />
-                            <div class="form-text">Al editar, déjala vacía para conservar la contraseña actual.</div>
+                            <div id="userPasswordHelp" class="form-text">Mínimo 6 caracteres.</div>
                         </div>
                         <div class="col-md-3">
                             <label for="userRole" class="form-label">Rol</label>
