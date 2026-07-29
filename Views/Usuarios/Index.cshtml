@@ -102,8 +102,13 @@
                         </div>
                         <div class="col-md-6">
                             <label id="userPasswordLabel" for="userPassword" class="form-label">Contraseña</label>
-                            <input id="userPassword" class="form-control" type="password" minlength="6"
-                                   autocomplete="new-password" />
+                            <div class="input-group">
+                                <input id="userPassword" class="form-control" type="password" minlength="6"
+                                       autocomplete="new-password" />
+                                <button id="togglePasswordVisibility" class="btn btn-outline-secondary" type="button">
+                                    Mostrar
+                                </button>
+                            </div>
                             <div id="userPasswordHelp" class="form-text">Mínimo 6 caracteres.</div>
                         </div>
                         <div class="col-md-3">

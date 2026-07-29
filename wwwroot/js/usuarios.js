@@ -82,6 +82,8 @@
         byId("fullName").value = user?.name ?? "";
         byId("username").value = user?.username ?? "";
         byId("userPassword").required = !user;
+        byId("userPassword").type = "password";
+        byId("togglePasswordVisibility").textContent = "Mostrar";
         byId("userPasswordHelp").textContent = user
             ? "Déjala vacía para conservar la contraseña actual. Escribe una nueva para cambiarla."
             : "Mínimo 6 caracteres.";
@@ -207,6 +209,12 @@
             !store.hasPermission("administrarUsuarios", currentUser));
         byId("newUserButton").addEventListener("click", () => openUserModal());
         byId("userForm").addEventListener("submit", saveUser);
+        byId("togglePasswordVisibility").addEventListener("click", () => {
+            const input = byId("userPassword");
+            const visible = input.type === "text";
+            input.type = visible ? "password" : "text";
+            byId("togglePasswordVisibility").textContent = visible ? "Mostrar" : "Ocultar";
+        });
         byId("selectAllPermissions").addEventListener("click", () =>
             document.querySelectorAll(".permission-checkbox:not(:disabled)")
                 .forEach(checkbox => checkbox.checked = true));
