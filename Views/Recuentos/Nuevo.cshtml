@@ -1,0 +1,456 @@
+@model TedaInventarioWeb.ViewModels.NuevoRecuentoViewModel
+
+@{
+    ViewData["Title"] = Model.Titulo;
+}
+
+<header class="page-header py-4">
+    <div class="container-fluid px-3 px-lg-4">
+        <div class="d-flex flex-wrap align-items-center justify-content-between gap-3">
+            <div class="d-flex align-items-center gap-3">
+                <span class="brand-mark" aria-hidden="true">T</span>
+                <div>
+                    <div class="small text-uppercase fw-semibold opacity-75">TeDá Inventario</div>
+                    <h1 class="h2 mb-0">@Model.Titulo</h1>
+                </div>
+            </div>
+            <div id="sessionSummary" class="session-summary d-none">
+                <span id="sessionUserName"></span>
+                <span id="sessionRoleBadge" class="badge rounded-pill"></span>
+                <button id="logoutButton" class="btn btn-sm btn-outline-light" type="button">Cerrar sesión</button>
+            </div>
+        </div>
+    </div>
+</header>
+
+<main class="container-fluid px-3 px-lg-4 py-4">
+    <section id="loginPanel" class="login-wrapper">
+        <div class="card form-card login-card">
+            <div class="card-body p-4 p-md-5">
+                <h2 class="section-title h4 mb-2">Iniciar sesión</h2>
+                <p class="text-secondary mb-4">Ingresa con una cuenta administradora u operaria.</p>
+                <form id="loginForm" novalidate>
+                    <div id="loginError" class="alert alert-danger d-none" role="alert">
+                        Usuario o contraseña incorrectos.
+                    </div>
+                    <div class="mb-3">
+                        <label for="loginUser" class="form-label">Usuario</label>
+                        <input id="loginUser" class="form-control" autocomplete="username" required />
+                    </div>
+                    <div class="mb-4">
+                        <label for="loginPassword" class="form-label">Contraseña</label>
+                        <input id="loginPassword" class="form-control" type="password"
+                               autocomplete="current-password" required />
+                    </div>
+                    <button class="btn btn-teda-primary w-100" type="submit">Ingresar</button>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <div id="applicationPanel" class="d-none">
+        <section id="adminToolbar" class="card form-card admin-toolbar mb-4 d-none">
+            <div class="card-body p-3 p-md-4">
+                <div class="d-flex flex-wrap align-items-center justify-content-between gap-3">
+                    <div>
+                        <h2 class="section-title h5 mb-1">Panel de administración</h2>
+                        <p class="text-secondary small mb-0">Configura los datos maestros antes del recuento.</p>
+                    </div>
+                    <div class="d-flex flex-wrap gap-2">
+                        <button class="btn btn-sm btn-teda-primary permission-action" data-permission="agregarProductos"
+                                type="button" data-admin-action="new-product">Nuevo producto</button>
+                        <button class="btn btn-sm btn-teda-blue permission-action" data-permission="editarProductos"
+                                type="button" data-admin-action="edit-product">Editar producto</button>
+                        <a class="btn btn-sm btn-teda-yellow permission-action" data-permission="importarProductos"
+                           asp-controller="Importacion" asp-action="Productos">Importar productos</a>
+                        <button class="btn btn-sm btn-teda-blue permission-action" data-permission="editarEmpresas"
+                                type="button" data-admin-action="edit-company">Editar empresa</button>
+                        <button class="btn btn-sm btn-teda-blue permission-action" data-permission="editarEmpresas"
+                                type="button" data-admin-action="edit-locations">Editar ubicaciones</button>
+                        <button id="prepareCountButton" class="btn btn-sm btn-teda-yellow permission-action"
+                                data-permission="prepararRecuentos" type="button">Preparar recuento</button>
+                        <button id="reopenCountButton" class="btn btn-sm btn-outline-success d-none permission-action"
+                                data-permission="editarConteos" type="button">Reabrir recuento</button>
+                        <button class="btn btn-sm btn-outline-danger js-finalize-count permission-action"
+                                data-permission="finalizarRecuentos" type="button">Finalizar recuento</button>
+                        <a class="btn btn-sm btn-teda-blue permission-action" data-permission="administrarUsuarios"
+                           asp-controller="Usuarios" asp-action="Index">Administrar usuarios</a>
+                        <a class="btn btn-sm btn-outline-primary permission-action" data-permission="verMovimientos"
+                           asp-controller="Movimientos" asp-action="Index">Ver movimientos</a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <div id="countStatusAlert" class="alert alert-info d-none" role="status"></div>
+        <div id="formErrorSummary" class="alert alert-danger d-none" role="alert" tabindex="-1">
+            Revisa los campos señalados antes de guardar.
+        </div>
+
+        <form id="recuentoForm" novalidate>
+            <section class="card form-card mb-4">
+                <div class="card-body p-3 p-md-4">
+                    <h2 class="section-title mb-4">Datos del recuento</h2>
+                    <div class="row g-3">
+                        <div class="col-12 col-md-6 col-xl-3">
+                            <label for="fechaHora" class="form-label">Fecha y hora</label>
+                            <input id="fechaHora" class="form-control" type="text"
+                                   value="@Model.FechaHoraServidor.ToString("dd/MM/yyyy HH:mm")" readonly />
+                        </div>
+                        <div class="col-12 col-md-6 col-xl-3">
+                            <label for="operaria" class="form-label">Operaria</label>
+                            <input id="operaria" class="form-control" type="text" readonly />
+                        </div>
+                        <div class="col-12 col-md-6 col-xl-3">
+                            <label for="empresa" class="form-label required-label">Empresa distribuidora</label>
+                            <select id="empresa" class="form-select" required>
+                                <option value="">Selecciona una empresa</option>
+                            </select>
+                            <div class="invalid-feedback">Selecciona una empresa.</div>
+                        </div>
+                        <div class="col-12 col-md-6 col-xl-3">
+                            <label for="producto" class="form-label required-label">Producto</label>
+                            <select id="producto" class="form-select" required disabled>
+                                <option value="">Selecciona un producto</option>
+                            </select>
+                            <div class="invalid-feedback">Selecciona un producto.</div>
+                            <div id="noProductsMessage" class="form-text text-danger d-none">
+                                No existen productos activos para esta empresa.
+                            </div>
+                        </div>
+                        <div class="col-12 col-md-6 permission-action" data-permission="buscarProductos">
+                            <label for="productSearch" class="form-label">Buscar producto por nombre</label>
+                            <div class="input-group">
+                                <input id="productSearch" class="form-control" type="search"
+                                       placeholder="Escribe el nombre del producto" autocomplete="off" />
+                                <button id="clearProductSearch" class="btn btn-outline-secondary" type="button">Limpiar</button>
+                            </div>
+                            <div id="productSearchResults" class="product-search-results d-none"></div>
+                        </div>
+                        <div class="col-12 col-md-6 permission-action" data-permission="buscarCodigoBarras">
+                            <label for="barcodeSearch" class="form-label">Buscar por código de barras</label>
+                            <div class="input-group">
+                                <input id="barcodeSearch" class="form-control" inputmode="numeric"
+                                       placeholder="Escribe o escanea el código" autocomplete="off" />
+                                <button id="barcodeSearchButton" class="btn btn-teda-blue" type="button">Buscar</button>
+                            </div>
+                            <div id="barcodeMessage" class="form-text"></div>
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <label for="presentacion" class="form-label">Presentación o medida</label>
+                            <input id="presentacion" class="form-control admin-product-field" type="text" readonly />
+                        </div>
+                        <div class="col-12 col-md-3">
+                            <label for="productCodeDisplay" class="form-label">Código interno</label>
+                            <input id="productCodeDisplay" class="form-control" readonly />
+                        </div>
+                        <div class="col-12 col-md-3 permission-action" data-permission="buscarCodigoBarras">
+                            <label for="productBarcodeDisplay" class="form-label">Código de barras</label>
+                            <input id="productBarcodeDisplay" class="form-control" readonly />
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <label for="observaciones" class="form-label">Observaciones</label>
+                            <textarea id="observaciones" class="form-control" rows="2" maxlength="500"
+                                      placeholder="Añade una observación si es necesario"></textarea>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="preparedDataSection" class="card form-card mb-4">
+                <div class="card-body p-3 p-md-4">
+                    <h2 class="section-title mb-2">Datos preparados por administración</h2>
+                    <p class="text-secondary mb-4">La operaria puede consultar estos valores, pero no modificarlos.</p>
+                    <div class="row g-3">
+                        <div class="col-6 col-md-4 col-xl">
+                            <label for="cantidadPaquete" class="form-label">Cantidad por paquete</label>
+                            <input id="cantidadPaquete" class="form-control admin-product-field" type="number" min="1" readonly />
+                        </div>
+                        <div class="col-6 col-md-4 col-xl">
+                            <label for="precioVenta" class="form-label">Precio de venta</label>
+                            <input id="precioVenta" class="form-control admin-product-field" type="number" min="0" step="0.01" readonly />
+                        </div>
+                        <div class="col-6 col-md-4 col-xl">
+                            <label for="precioCosto" class="form-label">Precio costo</label>
+                            <input id="precioCosto" class="form-control admin-product-field" type="number" min="0" step="0.01" readonly />
+                        </div>
+                        <div class="col-6 col-md-4 col-xl">
+                            <label for="saldoAnterior" class="form-label">Saldo anterior</label>
+                            <input id="saldoAnterior" class="form-control admin-product-field js-calculation-source" type="number" min="0" readonly />
+                        </div>
+                        <div class="col-6 col-md-4 col-xl">
+                            <label for="compras" class="form-label">Compras</label>
+                            <input id="compras" class="form-control admin-product-field js-calculation-source" type="number" min="0" readonly />
+                        </div>
+                        <div class="col-6 col-md-4 col-xl">
+                            <label for="ventasSistema" class="form-label">Ventas según sistema</label>
+                            <input id="ventasSistema" class="form-control admin-product-field js-calculation-source" type="number" min="0" readonly />
+                        </div>
+                        <div class="col-6 col-md-4 col-xl">
+                            <label for="promedioSemanal" class="form-label">Promedio semanal</label>
+                            <input id="promedioSemanal" class="form-control admin-product-field" type="number" min="0" readonly />
+                        </div>
+                        <div class="col-6 col-md-4 col-xl">
+                            <label for="stockMinimo" class="form-label">Stock mínimo</label>
+                            <input id="stockMinimo" class="form-control admin-product-field" type="number" min="0" readonly />
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="card form-card mb-4">
+                <div class="card-body p-3 p-md-4">
+                    <h2 class="section-title mb-2">Reconteo por ubicación</h2>
+                    <p class="text-secondary mb-4">Escribe la cantidad física encontrada en cada ubicación.</p>
+                    <div id="locationFields" class="row g-3"></div>
+                </div>
+            </section>
+
+            <section id="countResultsSection" class="card form-card mb-4">
+                <div class="card-body p-3 p-md-4">
+                    <h2 class="section-title mb-4">Resultado del recuento</h2>
+                    <div class="row g-3">
+                        <div class="col-12 col-md-3">
+                            <div class="calculated-box">
+                                <label for="totalEsperado" class="form-label">Total esperado</label>
+                                <input id="totalEsperado" class="form-control" value="0" readonly />
+                            </div>
+                        </div>
+                        <div class="col-12 col-md-3">
+                            <div class="calculated-box">
+                                <label for="reconteoTotal" class="form-label">Recuento manual total</label>
+                                <input id="reconteoTotal" class="form-control" value="0" readonly />
+                            </div>
+                        </div>
+                        <div class="col-12 col-md-3">
+                            <div class="calculated-box">
+                                <label for="ventasReconteo" class="form-label">Ventas según recuento</label>
+                                <input id="ventasReconteo" class="form-control" value="0" readonly />
+                            </div>
+                        </div>
+                        <div class="col-12 col-md-3">
+                            <div class="calculated-box">
+                                <label for="diferencia" class="form-label">Diferencia con ventas del sistema</label>
+                                <input id="diferencia" class="form-control result-correct" value="0" readonly />
+                            </div>
+                        </div>
+                        <div class="col-12 col-md-3">
+                            <div id="resultStatus" class="result-status result-status-correct">
+                                <span id="resultIcon" class="result-icon" aria-hidden="true">✓</span>
+                                <strong id="resultText">Recuento correcto</strong>
+                                <small id="resultDetail">Sin diferencia</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <div id="operatorActions" class="action-buttons d-flex flex-wrap justify-content-end gap-2 mb-5">
+                <button id="clearQuantitiesButton" class="btn btn-teda-yellow" type="button">Limpiar cantidades</button>
+                <button id="saveProductCountButton" class="btn btn-teda-primary permission-action"
+                        data-permission="registrarConteos" type="submit">Guardar recuento</button>
+                <button id="nextProductButton" class="btn btn-teda-blue permission-action"
+                        data-permission="registrarConteos" type="button">Siguiente producto</button>
+                <button class="btn btn-outline-danger js-finalize-count permission-action"
+                        data-permission="finalizarRecuentos" type="button">Finalizar recuento</button>
+            </div>
+        </form>
+
+        <section id="weeklyControlSection" class="card weekly-control-card" aria-labelledby="weeklyControlTitle">
+            <div class="card-body p-0">
+                <div class="p-3 p-md-4">
+                    <div class="d-flex flex-wrap align-items-center justify-content-between gap-3">
+                        <div>
+                            <h2 id="weeklyControlTitle" class="section-title h4 mb-1">Productos y control semanal</h2>
+                            <p class="text-secondary mb-0">La tabla se genera al guardar el conteo de cada producto.</p>
+                        </div>
+                        <div class="d-flex align-items-center gap-2">
+                            <span id="tableRecordCount" class="badge text-bg-light">0 productos</span>
+                            <button id="exportExcelButton" class="btn btn-sm btn-teda-yellow permission-action"
+                                    data-permission="exportarDatos" type="button">Exportar a Excel</button>
+                        </div>
+                    </div>
+                    <div class="row g-2 mt-3">
+                        <div class="col-12 col-md-5">
+                            <label for="tableSearch" class="visually-hidden">Buscar producto</label>
+                            <input id="tableSearch" class="form-control" type="search" placeholder="Buscar por producto..." />
+                        </div>
+                        <div class="col-6 col-md-3">
+                            <label for="tableCompanyFilter" class="visually-hidden">Filtrar por empresa</label>
+                            <select id="tableCompanyFilter" class="form-select">
+                                <option value="">Todas las empresas</option>
+                            </select>
+                        </div>
+                        <div class="col-6 col-md-3">
+                            <label for="tableStatusFilter" class="visually-hidden">Filtrar por estado</label>
+                            <select id="tableStatusFilter" class="form-select">
+                                <option value="">Todos los estados</option>
+                                <option value="Correcto">Correctos</option>
+                                <option value="Con diferencia">Con diferencia</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="table-responsive inventory-table-region" tabindex="0">
+                    <table class="table table-bordered inventory-table">
+                        <thead>
+                            <tr>
+                                <th>Producto</th>
+                                <th>Empresa</th>
+                                <th>Presentación</th>
+                                <th>Cant. paquete</th>
+                                <th>Precio de venta</th>
+                                <th>Precio costo</th>
+                                <th>Saldo anterior</th>
+                                <th>Compras</th>
+                                <th>Depósito grande</th>
+                                <th>Depósito chico</th>
+                                <th>Heladera depósito</th>
+                                <th>Heladeras tienda</th>
+                                <th>Mostrador</th>
+                                <th>Recuento total</th>
+                                <th>Ventas por recuento</th>
+                                <th>Ventas sistema</th>
+                                <th>Diferencia</th>
+                                <th>Fecha y hora</th>
+                                <th>Operaria</th>
+                                <th>Promedio semanal</th>
+                                <th>Stock mínimo</th>
+                                <th>Pedido sugerido</th>
+                                <th>Estado</th>
+                                <th>Observaciones</th>
+                                <th class="admin-only-column">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="weeklyControlBody"></tbody>
+                    </table>
+                    <div id="emptyTableMessage" class="empty-table-message">
+                        Todavía no se guardó ningún conteo de producto.
+                    </div>
+                </div>
+                <div class="table-note m-3 m-md-4 p-3">
+                    El pedido sugerido completa cuatro semanas de venta y siempre se redondea al siguiente paquete.
+                </div>
+            </div>
+        </section>
+    </div>
+</main>
+
+<!-- Modal para crear o editar productos. -->
+<div class="modal fade" id="productModal" tabindex="-1" aria-labelledby="productModalTitle" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+        <div class="modal-content">
+            <form id="productAdminForm">
+                <div class="modal-header">
+                    <h2 id="productModalTitle" class="modal-title fs-5">Nuevo producto</h2>
+                    <button class="btn-close" type="button" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                </div>
+                <div class="modal-body">
+                    <input id="adminProductId" type="hidden" />
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label for="adminProductCompany" class="form-label">Empresa</label>
+                            <select id="adminProductCompany" class="form-select" required></select>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="adminProductCode" class="form-label">Código interno</label>
+                            <input id="adminProductCode" class="form-control" maxlength="40" required />
+                        </div>
+                        <div class="col-md-6">
+                            <label for="adminProductBarcode" class="form-label">Código de barras (opcional)</label>
+                            <input id="adminProductBarcode" class="form-control" maxlength="80" />
+                        </div>
+                        <div class="col-md-6">
+                            <label for="adminProductName" class="form-label">Producto</label>
+                            <input id="adminProductName" class="form-control" required />
+                        </div>
+                        <div class="col-md-6">
+                            <label for="adminProductPresentation" class="form-label">Presentación</label>
+                            <input id="adminProductPresentation" class="form-control" required />
+                        </div>
+                        <div class="col-md-6">
+                            <label for="adminPackageQuantity" class="form-label">Cantidad por paquete</label>
+                            <input id="adminPackageQuantity" class="form-control" type="number" min="1" required />
+                        </div>
+                        <div class="col-6 col-md-3">
+                            <label for="adminSalePrice" class="form-label">Precio de venta</label>
+                            <input id="adminSalePrice" class="form-control" type="number" min="0" step="0.01" required />
+                        </div>
+                        <div class="col-6 col-md-3">
+                            <label for="adminCostPrice" class="form-label">Precio costo</label>
+                            <input id="adminCostPrice" class="form-control" type="number" min="0" step="0.01" required />
+                        </div>
+                        <div class="col-6 col-md-3">
+                            <label for="adminPreviousBalance" class="form-label">Saldo anterior</label>
+                            <input id="adminPreviousBalance" class="form-control" type="number" min="0" required />
+                        </div>
+                        <div class="col-6 col-md-3">
+                            <label for="adminPurchases" class="form-label">Compras</label>
+                            <input id="adminPurchases" class="form-control" type="number" min="0" required />
+                        </div>
+                        <div class="col-6 col-md-4">
+                            <label for="adminSystemSales" class="form-label">Ventas según sistema</label>
+                            <input id="adminSystemSales" class="form-control" type="number" min="0" required />
+                        </div>
+                        <div class="col-6 col-md-4">
+                            <label for="adminWeeklyAverage" class="form-label">Promedio semanal</label>
+                            <input id="adminWeeklyAverage" class="form-control" type="number" min="0" required />
+                        </div>
+                        <div class="col-6 col-md-4">
+                            <label for="adminMinimumStock" class="form-label">Stock mínimo</label>
+                            <input id="adminMinimumStock" class="form-control" type="number" min="0" required />
+                        </div>
+                        <div id="adminProductActiveGroup" class="col-12">
+                            <div class="form-check form-switch">
+                                <input id="adminProductActive" class="form-check-input" type="checkbox" checked />
+                                <label class="form-check-label" for="adminProductActive">Producto activo</label>
+                            </div>
+                        </div>
+                        <div class="col-12">
+                            <hr />
+                            <h3 class="h6">Cantidades esperadas por ubicación</h3>
+                            <div id="adminExpectedLocations" class="row g-2"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button id="toggleAdminProductState" class="btn btn-outline-danger d-none" type="button">Desactivar</button>
+                    <button class="btn btn-outline-secondary" type="button" data-bs-dismiss="modal">Cancelar</button>
+                    <button id="adminProductSaveButton" class="btn btn-teda-primary" type="submit">Guardar producto</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal sencillo para empresas y ubicaciones. -->
+<div class="modal fade" id="masterDataModal" tabindex="-1" aria-labelledby="masterDataModalTitle" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="masterDataModalTitle" class="modal-title fs-5">Datos maestros</h2>
+                <button class="btn-close" type="button" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+            </div>
+            <div class="modal-body">
+                <div id="masterDataAddGroup" class="input-group mb-3">
+                    <input id="masterDataName" class="form-control" placeholder="Nuevo nombre" />
+                    <button id="addMasterDataButton" class="btn btn-teda-primary" type="button">Agregar</button>
+                </div>
+                <div id="masterDataList" class="list-group"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="toast-container position-fixed bottom-0 end-0 p-3">
+    <div id="appToast" class="toast border-0" role="status" aria-live="polite">
+        <div class="d-flex">
+            <div id="appToastBody" class="toast-body"></div>
+            <button class="btn-close me-2 m-auto" type="button" data-bs-dismiss="toast" aria-label="Cerrar"></button>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/js/recuentos.js" asp-append-version="true"></script>
+}

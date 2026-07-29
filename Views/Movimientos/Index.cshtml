@@ -1,0 +1,104 @@
+@{
+    ViewData["Title"] = "Tabla de movimientos";
+}
+
+<header class="page-header py-4">
+    <div class="container-fluid px-3 px-lg-4">
+        <div class="d-flex flex-wrap align-items-center justify-content-between gap-3">
+            <div class="d-flex align-items-center gap-3">
+                <span class="brand-mark" aria-hidden="true">T</span>
+                <div>
+                    <div class="small text-uppercase fw-semibold opacity-75">TeDá Inventario</div>
+                    <h1 class="h2 mb-0">Tabla de movimientos</h1>
+                </div>
+            </div>
+            <a class="btn btn-outline-light" asp-controller="Recuentos" asp-action="Nuevo">Volver al recuento</a>
+        </div>
+    </div>
+</header>
+
+<main class="container-fluid px-3 px-lg-4 py-4">
+    <div id="movementsAccessDenied" class="alert alert-danger d-none">
+        No tienes permiso para ver la tabla de movimientos.
+    </div>
+
+    <section id="movementsContent" class="card form-card d-none">
+        <div class="card-body p-0">
+            <div class="p-3 p-md-4">
+                <div class="d-flex flex-wrap align-items-center justify-content-between gap-3">
+                    <div>
+                        <h2 class="section-title h4 mb-1">Historial de acciones</h2>
+                        <p class="text-secondary mb-0">Los movimientos se ordenan del más reciente al más antiguo.</p>
+                    </div>
+                    <div class="d-flex align-items-center gap-2">
+                        <span id="movementCount" class="badge text-bg-light">0 registros</span>
+                        <button id="exportMovementsButton" class="btn btn-sm btn-teda-blue d-none" type="button">
+                            Exportar datos
+                        </button>
+                    </div>
+                </div>
+
+                <div class="movement-filters mt-4">
+                    <div>
+                        <label for="movementDate" class="form-label">Fecha exacta</label>
+                        <input id="movementDate" class="form-control" type="date" />
+                    </div>
+                    <div>
+                        <label for="movementDateFrom" class="form-label">Fecha desde</label>
+                        <input id="movementDateFrom" class="form-control" type="date" />
+                    </div>
+                    <div>
+                        <label for="movementDateTo" class="form-label">Fecha hasta</label>
+                        <input id="movementDateTo" class="form-control" type="date" />
+                    </div>
+                    <div>
+                        <label for="movementUserFilter" class="form-label">Usuario</label>
+                        <select id="movementUserFilter" class="form-select">
+                            <option value="">Todos los usuarios</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="movementActionFilter" class="form-label">Tipo de acción</label>
+                        <select id="movementActionFilter" class="form-select">
+                            <option value="">Todas las acciones</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="d-flex flex-wrap gap-2 mt-3">
+                    <button id="searchMovementsButton" class="btn btn-teda-primary" type="button">Buscar</button>
+                    <button id="todayMovementsButton" class="btn btn-teda-yellow" type="button">Hoy</button>
+                    <button id="clearMovementFiltersButton" class="btn btn-outline-secondary" type="button">Limpiar filtro</button>
+                </div>
+            </div>
+
+            <div class="table-responsive movement-table-region">
+                <table class="table table-bordered management-table movement-table mb-0">
+                    <thead>
+                        <tr>
+                            <th>Fecha</th>
+                            <th>Hora</th>
+                            <th>Usuario</th>
+                            <th>Rol</th>
+                            <th>Tipo de acción</th>
+                            <th>Módulo</th>
+                            <th>Descripción</th>
+                            <th>Producto</th>
+                            <th>Empresa</th>
+                            <th>Valor anterior</th>
+                            <th>Valor nuevo</th>
+                        </tr>
+                    </thead>
+                    <tbody id="movementsTableBody"></tbody>
+                </table>
+                <div id="emptyMovementsMessage" class="empty-table-message d-none">
+                    No hay movimientos para los filtros seleccionados.
+                </div>
+            </div>
+        </div>
+    </section>
+</main>
+
+@section Scripts {
+    <script src="~/js/movimientos.js" asp-append-version="true"></script>
+}
